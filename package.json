@@ -9,18 +9,15 @@
     "dev": "nodemon index.ts"
   },
   "dependencies": {
-    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.10.5",
     "@types/nodemailer": "^6.4.14",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "mongodb": "^6.3.0",
-    "mongoose": "^8.0.3",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.7",
     "nodemon": "^3.0.2",
-    "personal_website_backend": "link:",
     "resend": "^2.0.0",
     "uuid": "^9.0.1"
   },
