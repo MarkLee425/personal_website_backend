@@ -4,6 +4,7 @@ import NodeCache = require("node-cache");
 import { v4 as uuidv4 } from "uuid";
 import cors = require("cors");
 import bodyParser from "body-parser";
+import e = require("cors");
 
 require("dotenv").config();
 
@@ -13,27 +14,32 @@ const port = process.env.PORT || 8000;
 
 cache.set("accessToken", uuidv4());
 
-setInterval(() => {
-  cache.set("accessToken", uuidv4());
-}, 1000 * 60 * 60);
+setInterval(
+  () => {
+    cache.set("accessToken", uuidv4());
+  },
+  1000 * 60 * 60
+);
 
-var corsOptions = {
-  origin: "http://localhost:3000",
+var corsOptions: e.CorsOptions = {
+  origin: "*",
 };
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-app.get("/", (_req, res: Response) => {
+app.get("/api/", (_req, res: Response) => {
   return res.status(404).send("Forbidden Request");
 });
 
-app.get("/api/getAccessToken", (_req: Request, res: Response) => {
+app.get("/api/getAccessToken", (req: Request, res: Response) => {
+  if (process.env.API_TOKEN !== req.header("Authorization"))
+    return res.status(401).send("Unauthorized. API token is required.");
   if (!cache.get("accessToken"))
-    res.status(500).json({
+    return res.status(500).json({
       error: "Internal Server Error!",
     });
-  res.status(200).json({
+  return res.status(200).json({
     accessToken: cache.get("accessToken"),
   });
 });
@@ -51,19 +57,29 @@ app.post("/api/send-email", async (req, res: Response) => {
     });
   }
   const { from, subject, html } = req.body;
-  console.log(from, subject, html);
+  if (!from || !subject || !html)
+    return res.status(400).json({
+      error:
+        "Bad Request. Please make sure you have include the 'from', 'subject' and 'html'.",
+    });
   try {
+    const record = cache.get(from);
+    console.log("current record: " + from + "_" + record);
+    console.log(parseInt(record as string) >= 2);
+    if (record && parseInt(record as string) >= 2)
+      return res
+        .status(406)
+        .json({ error: "Sorry you have exceeded the sending limit." });
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const { data, error } = await resend.emails.send({
-      from: "update@career.resend.com",
-      to: "leehokwong0425@protonmail.com",
+      from: process.env.RESEND_REGISTERED_EMAIL ?? "",
+      to: process.env.MY_EMAIL ?? "",
       subject,
       html,
     });
-    console.log(error?.message);
     if (error) return res.status(500).json({ error: error.message });
-
+    cache.set(from, record ? parseInt(record as string) + 1 : 1, 86400);
     return res.status(200).json({ message: "Success!", id: data?.id });
   } catch (error) {
     console.error(error);
