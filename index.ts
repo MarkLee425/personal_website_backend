@@ -28,8 +28,8 @@ var corsOptions: e.CorsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-app.get("/api/", (_req, res: Response) => {
-  return res.status(404).send("Forbidden Request");
+app.get("/api/", (_req: Request, res: Response) => {
+  return res?.status(404).send("Forbidden Request");
 });
 
 app.get("/api/getAccessToken", (req: Request, res: Response) => {
