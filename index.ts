@@ -28,11 +28,11 @@ var corsOptions: e.CorsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-app.get("/api/", (_req: Request, res: Response) => {
+app.get("/", (_req: Request, res: Response) => {
   return res?.status(404).send("Forbidden Request");
 });
 
-app.get("/api/getAccessToken", (req: Request, res: Response) => {
+app.get("/getAccessToken", (req: Request, res: Response) => {
   if (process.env.API_TOKEN !== req.header("Authorization"))
     return res.status(401).send("Unauthorized. API token is required.");
   if (!cache.get("accessToken"))
@@ -44,7 +44,7 @@ app.get("/api/getAccessToken", (req: Request, res: Response) => {
   });
 });
 
-app.post("/api/send-email", async (req, res: Response) => {
+app.post("/send-email", async (req, res: Response) => {
   const accessToken = req.header("Authorization");
   if (!accessToken)
     return res.status(401).json({
